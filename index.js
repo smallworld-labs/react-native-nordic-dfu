@@ -1,5 +1,5 @@
-import { NativeModules, NativeEventEmitter, Platform } from "react-native";
-const { RNNordicDfu } = NativeModules;
+import { NativeEventEmitter, Platform } from "react-native";
+import RNNordicDfu from "./src/NativeRNNordicDfu";
 const NordicDFU = { startDFU };
 
 function rejectPromise(message) {
@@ -55,28 +55,18 @@ function startDFU({
     return rejectPromise("No filePath defined");
   }
   const upperDeviceAddress = deviceAddress.toUpperCase();
-  if (Platform.OS === "ios") {
-    return RNNordicDfu.startDFU(
-      upperDeviceAddress,
-      deviceName,
-      filePath,
-      packetReceiptNotificationParameter,
-      alternativeAdvertisingNameEnabled
-    );
-  } else if (Platform.OS === "android") {
-    return RNNordicDfu.startDFU(
-      upperDeviceAddress,
-      deviceName,
-      filePath,
-      packetReceiptNotificationParameter,
-      {
-        retries,
-        maxMtu,
-      }
-    );
-  } else {
+  if (Platform.OS !== "ios" && Platform.OS !== "android") {
     throw new Error("Platform not supported (not android or ios)");
   }
+  return RNNordicDfu.startDFU(
+    upperDeviceAddress,
+    deviceName,
+    filePath,
+    packetReceiptNotificationParameter,
+    Platform.OS === "ios"
+      ? { alternativeAdvertisingNameEnabled }
+      : { retries, maxMtu }
+  );
 }
 
 /**

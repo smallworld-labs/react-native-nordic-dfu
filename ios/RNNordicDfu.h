@@ -1,16 +1,17 @@
 #import <CoreBluetooth/CoreBluetooth.h>
-#import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
-#import <iOSDFULibrary/iOSDFULibrary-Swift.h>
 
-@interface RNNordicDfu : RCTEventEmitter<RCTBridgeModule, DFUServiceDelegate, DFUProgressDelegate, LoggerDelegate>
+/**
+ * TurboModule `RNNordicDfu`.
+ *
+ * This header deliberately imports neither the NordicDFU Swift module nor the
+ * codegen'd spec, so the app delegate can import it from Objective-C(++)
+ * without `use_frameworks!`.
+ */
+@interface RNNordicDfu : RCTEventEmitter
 
-@property (strong, nonatomic) NSString * deviceAddress;
-@property (strong, nonatomic) RCTPromiseResolveBlock resolve;
-@property (strong, nonatomic) RCTPromiseRejectBlock reject;
-
-+ (void)setCentralManagerGetter:(CBCentralManager * (^)())getter;
-+ (void)setOnDFUComplete:(void (^)())onComplete;
-+ (void)setOnDFUError:(void (^)())onError;
++ (void)setCentralManagerGetter:(CBCentralManager * (^)(void))getter;
++ (void)setOnDFUComplete:(void (^)(void))onComplete;
++ (void)setOnDFUError:(void (^)(void))onError;
 
 @end

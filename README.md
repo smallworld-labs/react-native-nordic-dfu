@@ -9,76 +9,23 @@ For more info about the DFU process, see: [Resources](#resources)
 
 - Please keep in mind the our availability to maintain this fork is limited and is based on our project needs.
 - If need the main documentation you can find it [here](https://github.com/Pilloxa/react-native-nordic-dfu).
-- This fork contains the latest verisons of `iOSDFULibrary` & `Android-BLE-Library`.
+- This fork uses [`NordicDFU`](https://github.com/nordicsemi/IOS-DFU-Library) on iOS (the renamed `iOSDFULibrary` pod) and [`no.nordicsemi.android:dfu`](https://github.com/nordicsemi/Android-DFU-Library) on Android.
+
+### Requirements (4.x)
+
+- React Native 0.77 or newer with the New Architecture enabled. The module is a TurboModule with a codegen spec ([`src/NativeRNNordicDfu.ts`](src/NativeRNNordicDfu.ts)); it no longer goes through the legacy native-module interop layer. Use 3.x on the old architecture.
+- iOS: `use_frameworks!` is **not** required any more. The NordicDFU Swift pod is imported as a module, so the package builds as a static library as well as with (static) frameworks.
+- Android: the Android Gradle Plugin, compile/target/min SDK and React Native version are taken from the app. The DFU library version can be overridden with `ext.nordicDfuVersion` in the root `build.gradle`.
 
 ### Installation
 
-Install and link the NPM package per usual with
-
 ```bash
-npm install --save https://github.com/Salt-PepperEngineering/react-native-nordic-dfu
+yarn add https://github.com/smallworldus/react-native-nordic-dfu
 ```
 
-or
-
-```bash
-yarn add https://github.com/Salt-PepperEngineering/react-native-nordic-dfu
-```
-
-For React Native below 60.0 version
-
-```bash
-react-native link react-native-nordic-dfu
-```
+The package is autolinked on both platforms.
 
 ### Project Setup
-
-Unfortunately, the ios project is written in Objective-C so you will need to use `use_frameworks! :linkage => :static`.
-Note: We are considering rewriting the ios module on Swift, but it depends very much on how much free time we have and how much we needed right now.
-
-`Podfile`:
-
-- Flipper Disabled
-
-```ruby
-target "YourApp" do
-
-  ...
-  pod "react-native-nordic-dfu", path: "../node_modules/react-native-nordic-dfu"
-  ...
-  use_frameworks! :linkage => :static
-  ...
-  :flipper_configuration => FlipperConfiguration.disabled,
-  ...
-
-end
-```
-
-- Flipper enabled
-
-```ruby
-static_frameworks = ['iOSDFULibrary']
-pre_install do |installer|
-  installer.pod_targets.each do |pod|
-    if static_frameworks.include?(pod.name)
-      puts "Overriding the static_frameworks? method for #{pod.name}"
-      def pod.build_type;
-        Pod::BuildType.new(:linkage => :static, :packaging => :framework)
-      end
-    end
-  end
-end
-
-target "YourApp" do
-
-  ...
-  pod "react-native-nordic-dfu", path: "../node_modules/react-native-nordic-dfu"
-  ...
-  :flipper_configuration => FlipperConfiguration.enabled,
-  ...
-
-end
-```
 
 `AppDelegate.mm`:
 

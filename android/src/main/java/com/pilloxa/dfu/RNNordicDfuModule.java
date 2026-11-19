@@ -7,17 +7,19 @@ import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.Nullable;
 import android.util.Log;
-import com.facebook.react.bridge.*;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
+import com.facebook.react.bridge.WritableMap;
 import no.nordicsemi.android.dfu.*;
 
-public class RNNordicDfuModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class RNNordicDfuModule extends NativeRNNordicDfuSpec implements LifecycleEventListener {
 
     private final String dfuStateEvent = "DFUStateChanged";
     private final String progressEvent = "DFUProgress";
-    private static final String name = "RNNordicDfu";
-    public static final String LOG_TAG = name;
+    public static final String LOG_TAG = NAME;
     private final ReactApplicationContext reactContext;
     private Promise mPromise = null;
 
@@ -30,8 +32,8 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
         }
     }
 
-    @ReactMethod
-    public void startDFU(String address, String name, String filePath, int packetReceiptNotificationParameter, ReadableMap options, Promise promise) {
+    @Override
+    public void startDFU(String address, @Nullable String name, String filePath, double packetReceiptNotificationParameter, ReadableMap options, Promise promise) {
         mPromise = promise;
         final DfuServiceInitiator starter = new DfuServiceInitiator(address)
                 .setKeepBond(false);
@@ -50,7 +52,7 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
         }
           // mimic behavior of iOSDFULibrary when packetReceiptNotificationParameter is set to `0` - see: https://github.com/NordicSemiconductor/IOS-Pods-DFU-Library/blob/master/iOSDFULibrary/Classes/Implementation/DFUServiceInitiator.swift#L115
         if (packetReceiptNotificationParameter > 0) {
-          starter.setPacketsReceiptNotificationsValue(packetReceiptNotificationParameter);
+          starter.setPacketsReceiptNotificationsValue((int) packetReceiptNotificationParameter);
         } else {
           starter.setPacketsReceiptNotificationsValue(1);
         }
@@ -65,28 +67,21 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @ReactMethod
     public void addListener(String eventName) {
       // Keep: Required for RN built in Event Emitter Calls.
     }
 
-     @ReactMethod
-    public void removeListeners(int count) {
+    @Override
+    public void removeListeners(double count) {
       // Keep: Required for RN built in Event Emitter Calls.
     }
 
     private void sendEvent(String eventName, @Nullable WritableMap params) {
-        getReactApplicationContext()
-                .getJSModule(RCTNativeAppEventEmitter.class)
-                .emit(eventName, params);
+        getReactApplicationContext().emitDeviceEvent(eventName, params);
     }
 
     private void sendStateUpdate(String state, String deviceAddress) {
-        WritableMap map = new WritableNativeMap();
+        WritableMap map = Arguments.createMap();
         Log.d(LOG_TAG, "State: " + state);
         map.putString("state", state);
         map.putString("deviceAddress", deviceAddress);
@@ -147,7 +142,7 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
         @Override
         public void onDfuCompleted(final String deviceAddress) {
             if (mPromise != null) {
-                WritableMap map = new WritableNativeMap();
+                WritableMap map = Arguments.createMap();
                 map.putString("deviceAddress", deviceAddress);
                 mPromise.resolve(map);
                 mPromise = null;
@@ -179,7 +174,7 @@ public class RNNordicDfuModule extends ReactContextBaseJavaModule implements Lif
 
         @Override
         public void onProgressChanged(final String deviceAddress, final int percent, final float speed, final float avgSpeed, final int currentPart, final int partsTotal) {
-            WritableMap map = new WritableNativeMap();
+            WritableMap map = Arguments.createMap();
             map.putString("deviceAddress", deviceAddress);
             map.putInt("percent", percent);
             map.putDouble("speed", speed);

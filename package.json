@@ -1,10 +1,10 @@
 {
   "name": "react-native-nordic-dfu",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "description": "Nordic Device Firmware Update for React Native",
   "main": "index.js",
-  "url": "https://github.com/Pilloxa/react-native-nordic-dfu",
-  "repository": "Pilloxa/react-native-nordic-dfu",
+  "url": "https://github.com/smallworldus/react-native-nordic-dfu",
+  "repository": "smallworldus/react-native-nordic-dfu",
   "scripts": {
     "test": "echo \"No test specified\"",
     "precommit": "lint-staged",
@@ -19,7 +19,7 @@
   "license": "MIT",
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": ">=0.77.0"
   },
   "devDependencies": {
     "documentation": "^13.2.5",
@@ -37,5 +37,18 @@
       "git add README.md"
     ]
   },
-  "types": "./index.d.ts"
+  "types": "./index.d.ts",
+  "codegenConfig": {
+    "name": "RNNordicDfuSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.pilloxa.dfu"
+    },
+    "ios": {
+      "modulesProvider": {
+        "RNNordicDfu": "RNNordicDfu"
+      }
+    }
+  }
 }

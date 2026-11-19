@@ -1,32 +1,24 @@
+apply plugin: 'com.android.library'
+// Runs codegen for src/NativeRNNordicDfu.ts (see codegenConfig in package.json).
+apply plugin: 'com.facebook.react'
 
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:7.2.1")
-    }
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
-apply plugin: 'com.android.library'
-
-def DEFAULT_COMPILE_SDK_VERSION = 31
-def DEFAULT_BUILD_TOOLS_VERSION = '31.0.0'
-def DEFAULT_TARGET_SDK_VERSION = 31
-
 android {
-    compileSdkVersion project.hasProperty('compileSdkVersion') ? project.compileSdkVersion : DEFAULT_COMPILE_SDK_VERSION
-    buildToolsVersion project.hasProperty('buildToolsVersion') ? project.buildToolsVersion : DEFAULT_BUILD_TOOLS_VERSION
+    namespace 'com.pilloxa.dfu'
+
+    // The Android Gradle Plugin, SDK levels and React Native version all come
+    // from the app; the fallbacks are only used if the app does not set them.
+    compileSdkVersion safeExtGet('compileSdkVersion', 35)
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion project.hasProperty('targetSdkVersion') ? project.targetSdkVersion : DEFAULT_TARGET_SDK_VERSION
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion safeExtGet('minSdkVersion', 24)
+        targetSdkVersion safeExtGet('targetSdkVersion', 35)
     }
-    lintOptions {
+
+    lint {
         abortOnError false
     }
 }
@@ -37,7 +29,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.facebook.react:react-native:+'
-    implementation 'no.nordicsemi.android:dfu:2.4.2'
+    implementation 'com.facebook.react:react-android'
+    // Override with `ext.nordicDfuVersion` in the app's root build.gradle.
+    // 2.10+ pull in kotlin-stdlib 2.2+/2.3+, which needs a newer Kotlin than
+    // React Native 0.80 ships with.
+    implementation "no.nordicsemi.android:dfu:${safeExtGet('nordicDfuVersion', '2.9.0')}"
 }
-

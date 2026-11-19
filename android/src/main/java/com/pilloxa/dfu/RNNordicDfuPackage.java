@@ -1,27 +1,42 @@
-
 package com.pilloxa.dfu;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import com.facebook.react.ReactPackage;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.facebook.react.BaseReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.uimanager.ViewManager;
-import com.facebook.react.bridge.JavaScriptModule;
-public class RNNordicDfuPackage implements ReactPackage {
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
+import java.util.HashMap;
+import java.util.Map;
+
+public class RNNordicDfuPackage extends BaseReactPackage {
+
+    @Nullable
     @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-      return Arrays.<NativeModule>asList(new RNNordicDfuModule(reactContext));
+    public NativeModule getModule(@NonNull String name, @NonNull ReactApplicationContext reactContext) {
+        if (RNNordicDfuModule.NAME.equals(name)) {
+            return new RNNordicDfuModule(reactContext);
+        }
+        return null;
     }
 
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
-      return Collections.emptyList();
-    }
-
+    @NonNull
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-      return Collections.emptyList();
+    public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        return () -> {
+            final Map<String, ReactModuleInfo> moduleInfos = new HashMap<>();
+            moduleInfos.put(
+                    RNNordicDfuModule.NAME,
+                    new ReactModuleInfo(
+                            RNNordicDfuModule.NAME,
+                            RNNordicDfuModule.class.getName(),
+                            false, // canOverrideExistingModule
+                            false, // needsEagerInit
+                            false, // isCxxModule
+                            true // isTurboModule
+                    ));
+            return moduleInfos;
+        };
     }
 }
